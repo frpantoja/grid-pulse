@@ -1,4 +1,4 @@
-# ⚡ Grid Pulse
+# Grid Pulse
 
 > Análisis predictivo de consumo energético en Smart Grids mediante Machine Learning
 
@@ -8,9 +8,9 @@
 
 ## ¿Qué es Grid Pulse?
 
-Grid Pulse es una solución de análisis predictivo de consumo energético en redes eléctricas inteligentes (Smart Grids). Aplica la metodología **CRISP-DM completa** sobre el dataset público *Smart Meters in London* para predecir demanda, detectar anomalías y visualizar patrones de consumo usando técnicas de Machine Learning.
+Grid Pulse es un análisis predictivo de consumo energético en redes eléctricas inteligentes (Smart Grids), construido sobre el dataset público *Smart Meters in London*. Aplico la metodología **CRISP-DM completa**, entrenando tres modelos con objetivos distintos: predicción de demanda, detección de anomalías, y captura de tendencias estacionales.
 
-El proyecto demuestra que es posible construir un pipeline de ciencia de datos completo —desde la comprensión del negocio hasta el despliegue— con stack 100% gratuito (Google Colab, Drive, GitHub).
+El objetivo no era solo entrenar modelos y reportar métricas, sino recorrer el proceso completo de un proyecto de ciencia de datos: desde la comprensión del negocio hasta tener algo que se pueda presentar y explicar con resultados reales detrás.
 
 ---
 
@@ -22,7 +22,7 @@ El proyecto demuestra que es posible construir un pipeline de ciencia de datos c
 | Prophet | 0.45 | 271% | Captura de tendencias y estacionalidades |
 | Isolation Forest | — | — | Detección de anomalías (277.903 detectadas, 5% del total) |
 
-**Hallazgo clave:** el Isolation Forest detectó anomalías concentradas entre las 23:00 y las 04:00 horas, con consumo promedio **2.4× superior** al consumo normal en ese horario.
+**Hallazgo que me pareció interesante:** las anomalías se concentran fuerte entre las 23:00 y las 04:00, con un consumo promedio **2.4× superior** al normal en ese horario. Vale la pena investigar qué hay detrás —podría ser uso de calefacción nocturna, algún patrón industrial doméstico, o simplemente ruido en los medidores.
 
 ---
 
@@ -32,6 +32,10 @@ El proyecto demuestra que es posible construir un pipeline de ciencia de datos c
 - **Licencia:** CC0 Public Domain
 - **Cobertura:** 5.567 hogares del área de Londres, diciembre 2011 – febrero 2014
 - **Volumen:** ~1,5 millones de filas por archivo, lecturas cada 30 minutos
+- **Nota:** el dataset no se incluye en este repositorio por su tamaño. Ver instrucciones en [`data/README.md`](data/README.md).
+
+---
+
 ## Dashboard Interactivo (Power BI)
 
 Los resultados de los tres modelos se visualizan en un dashboard de **Power BI Desktop** con 3 páginas:
@@ -46,10 +50,9 @@ Los resultados de los tres modelos se visualizan en un dashboard de **Power BI D
 
 Para visualizarlo, abrir el archivo con Power BI Desktop (gratuito). Los datos provienen de 3 archivos CSV exportados directamente desde el notebook (`predicciones_rf.csv`, `anomalias_if.csv`, `patrones_horarios.csv`), generados en la sección 7 del pipeline CRISP-DM.
 
+Una dificultad que tomó tiempo resolver: los CSV exportados desde Python usan punto como separador decimal, pero la configuración regional de Windows en mi equipo espera coma, lo que hacía que Power BI leyera mal los números (los interpretaba como enteros gigantes). La solución fue exportar los CSV con `;` como separador de columnas y coma como separador decimal — al cargarlos en Power BI hay que seleccionar "Punto y coma" como delimitador.
+
 ---
-
-
-## Arquitectura del Proyecto
 
 ```
 Fuente de datos (Kaggle)
@@ -149,13 +152,13 @@ Grid Pulse se encuentra actualmente en **TRL 4 — Validación en laboratorio**.
 
 | TRL | Estado | Descripción |
 |---|---|---|
-| TRL 1 | ✅ Completado | Investigación de técnicas ML para predicción energética |
-| TRL 2 | ✅ Completado | Arquitectura Data Lake + selección de modelos |
-| TRL 3 | ✅ Completado | Prueba de concepto con datos reales |
-| TRL 4 | ✅ Completado | Validación con métricas cuantitativas en laboratorio |
-| TRL 5 | ⏳ Pendiente | Dataset completo en Apache Spark / GCP |
-| TRL 6 | ⏳ Pendiente | Dashboard en Cloud Run con datos en tiempo real |
-| TRL 7–9 | ⏳ Pendiente | Piloto con distribuidora eléctrica real → producción |
+| TRL 1 | Completado | Investigación de técnicas ML para predicción energética |
+| TRL 2 | Completado | Arquitectura Data Lake + selección de modelos |
+| TRL 3 | Completado | Prueba de concepto con datos reales |
+| TRL 4 | Completado | Validación con métricas cuantitativas en laboratorio |
+| TRL 5 | Pendiente | Dataset completo en Apache Spark / GCP |
+| TRL 6 | Pendiente | Dashboard en Cloud Run con datos en tiempo real |
+| TRL 7–9 | Pendiente | Piloto con distribuidora eléctrica real → producción |
 
 Para el roadmap completo con estimación de costos en CLP, ver [`docs/TRL_Negocios_CLP.pdf`](docs/TRL_Negocios_CLP.pdf).
 
@@ -163,11 +166,13 @@ Para el roadmap completo con estimación de costos en CLP, ver [`docs/TRL_Negoci
 
 ## Decisiones Técnicas Clave
 
+Algunas decisiones del proyecto no fueron obvias desde el principio y vale la pena explicar el porqué:
+
 **¿Por qué subsampling a 500K registros?**
-El dataset completo tiene ~167M registros. Google Colab free tier limita la RAM a ~13GB, lo que hace inviable entrenar Random Forest sobre el dataset completo. Se utilizó `sklearn.utils.resample` con stratify para generar una muestra representativa de 500K registros, manteniendo el conjunto de test completo.
+El dataset completo tiene ~167M registros. Google Colab free tier limita la RAM a ~13GB, lo que hace inviable entrenar Random Forest sobre el dataset completo. Usé `sklearn.utils.resample` con stratify para generar una muestra representativa de 500K registros, manteniendo el conjunto de test completo. Es una limitación real del entorno gratuito, no una elección de diseño ideal.
 
 **¿Por qué Prophet tiene MAPE=271%?**
-Prophet está optimizado para series temporales con estacionalidades claras a nivel diario o semanal. El dataset contiene lecturas individuales por hogar con alta volatilidad, lo que eleva el error de predicción puntual. Prophet es útil en este proyecto para capturar tendencias y estacionalidades anuales, no para predicción precisa a escala semihourly.
+Prophet está optimizado para series temporales con estacionalidades claras a nivel diario o semanal. El dataset contiene lecturas individuales por hogar con alta volatilidad, lo que eleva el error de predicción puntual. En este proyecto Prophet es útil para capturar tendencias y estacionalidades anuales, pero no es el modelo a usar si se necesita predicción precisa a escala semihourly.
 
 ---
 
@@ -182,9 +187,9 @@ Prophet está optimizado para series temporales con estacionalidades claras a ni
 
 ## Sobre el Proyecto
 
-Desarrollado por **Francisco Pantoja Loyola** como proyecto capstone en **Duoc UC**.
+Desarrollado por **Francisco Pantoja Loyola** en **Duoc UC**.
 
-Aplica metodología CRISP-DM completa sobre datos reales del sector energético, demostrando el dominio del proceso end-to-end de ciencia de datos: desde la comprensión del negocio hasta el despliegue de un dashboard interactivo en Power BI.
+El proyecto recorre las 6 fases de CRISP-DM sobre datos reales del sector energético: comprensión del negocio, entendimiento y preparación de los datos, modelado con tres algoritmos distintos, evaluación crítica de resultados, y despliegue en un dashboard interactivo en Power BI.
 
 ---
 
