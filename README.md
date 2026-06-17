@@ -3,11 +3,6 @@
 > Análisis predictivo de consumo energético en Smart Grids mediante Machine Learning
 
 ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
-![TRL](https://img.shields.io/badge/TRL-4%20%E2%80%94%20Validado%20en%20laboratorio-orange?style=flat)
-![Metodología](https://img.shields.io/badge/Metodolog%C3%ADa-CRISP--DM-blue?style=flat)
-![Dataset](https://img.shields.io/badge/Dataset-Smart%20Meters%20London-green?style=flat)
-![Licencia Dataset](https://img.shields.io/badge/Licencia%20Dataset-CC0%20Public%20Domain-lightgrey?style=flat)
-![Costo](https://img.shields.io/badge/Stack-100%25%20gratuito-brightgreen?style=flat)
 
 ---
 
@@ -37,9 +32,22 @@ El proyecto demuestra que es posible construir un pipeline de ciencia de datos c
 - **Licencia:** CC0 Public Domain
 - **Cobertura:** 5.567 hogares del área de Londres, diciembre 2011 – febrero 2014
 - **Volumen:** ~1,5 millones de filas por archivo, lecturas cada 30 minutos
-- **Nota:** el dataset no se incluye en este repositorio por su tamaño. Ver instrucciones en [`data/README.md`](data/README.md).
+## Dashboard Interactivo (Power BI)
+
+Los resultados de los tres modelos se visualizan en un dashboard de **Power BI Desktop** con 3 páginas:
+
+| Página | Contenido |
+|---|---|
+| **Patrones de Consumo** | Consumo promedio por hora del día — muestra el pico residencial (19:00–21:00) y el valle nocturno (03:00–04:00) |
+| **Detección de Anomalías** | Comparación de consumo Normal vs Anomalía por hora, más el total de anomalías detectadas (277.903) |
+| **Predicción de Demanda (RF)** | Consumo real vs predicho por el modelo Random Forest, agregado por hora |
+
+**Archivo:** [`dashboard/Grid_Pulse_Dashboard.pbix`](dashboard/Grid_Pulse_Dashboard.pbix)
+
+Para visualizarlo, abrir el archivo con Power BI Desktop (gratuito). Los datos provienen de 3 archivos CSV exportados directamente desde el notebook (`predicciones_rf.csv`, `anomalias_if.csv`, `patrones_horarios.csv`), generados en la sección 7 del pipeline CRISP-DM.
 
 ---
+
 
 ## Arquitectura del Proyecto
 
@@ -62,11 +70,11 @@ Google Colab (procesamiento Python)
    │  3. Preparación de Datos              │
    │  4. Modelado (RF + Prophet + IF)      │
    │  5. Evaluación                        │
-   │  6. Despliegue (Dashboard Streamlit)  │
+   │  6. Despliegue (Exportación CSV)      │
    └───────────────────────────────────────┘
         │
         ▼
-Dashboard Streamlit (visualización interactiva)
+Dashboard Power BI (visualización interactiva)
 ```
 
 ---
@@ -80,7 +88,8 @@ Dashboard Streamlit (visualización interactiva)
 | Predicción | scikit-learn (Random Forest) |
 | Series temporales | Prophet (Meta) |
 | Anomalías | scikit-learn (Isolation Forest) |
-| Visualización | matplotlib, seaborn, Streamlit |
+| Visualización exploratoria | matplotlib, seaborn |
+| Dashboard | Power BI Desktop |
 | Subsampling | sklearn.utils.resample |
 
 ---
@@ -90,15 +99,15 @@ Dashboard Streamlit (visualización interactiva)
 ```
 grid-pulse/
 ├── notebook/
-│   └── grid_pulse_crisp_dm.ipynb   ← Pipeline CRISP-DM completo ejecutado
+│   └── Grid_Pulse_CRISPDM_Completo.ipynb   ← Pipeline CRISP-DM completo ejecutado
 ├── dashboard/
-│   └── app.py                      ← Dashboard Streamlit
+│   └── Grid_Pulse_Dashboard.pbix           ← Dashboard Power BI
 ├── docs/
 │   ├── Informe_Grid_Pulse.pdf
 │   ├── TRL_Negocios_CLP.pdf
 │   └── Gestion_Riesgos.pdf
 ├── data/
-│   └── README.md                   ← Instrucciones para obtener el dataset
+│   └── README.md                           ← Instrucciones para obtener el dataset
 ├── requirements.txt
 └── README.md
 ```
@@ -126,14 +135,11 @@ Seguir las instrucciones en [`data/README.md`](data/README.md) para descargar el
 
 ### 4. Ejecutar el notebook
 
-Abrir `notebook/grid_pulse_crisp_dm.ipynb` en Google Colab y ejecutar todas las celdas en orden.
+Abrir `notebook/Grid_Pulse_CRISPDM_Completo.ipynb` en Google Colab y ejecutar todas las celdas en orden. Al llegar a la sección 7 (Deployment) se generan automáticamente los 3 archivos CSV necesarios para el dashboard.
 
-### 5. Ejecutar el dashboard
+### 5. Abrir el dashboard
 
-```bash
-cd dashboard
-streamlit run app.py
-```
+Abrir `dashboard/Grid_Pulse_Dashboard.pbix` con [Power BI Desktop](https://powerbi.microsoft.com/desktop/) (gratuito, Windows). No requiere conexión a internet ni cuenta en la nube.
 
 ---
 
@@ -178,7 +184,7 @@ Prophet está optimizado para series temporales con estacionalidades claras a ni
 
 Desarrollado por **Francisco Pantoja Loyola** como proyecto capstone en **Duoc UC**.
 
-Aplica metodología CRISP-DM completa sobre datos reales del sector energético, demostrando el dominio del proceso end-to-end de ciencia de datos: desde la comprensión del negocio hasta el despliegue de un dashboard interactivo.
+Aplica metodología CRISP-DM completa sobre datos reales del sector energético, demostrando el dominio del proceso end-to-end de ciencia de datos: desde la comprensión del negocio hasta el despliegue de un dashboard interactivo en Power BI.
 
 ---
 
